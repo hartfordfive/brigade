@@ -1,0 +1,11 @@
+commander/directives.json
+notes.md
+_tmp/
+*.bak
+commander/commander
+commander/*.state
+node/node
+output.txt
+TODO.md
+DESIGN.md
+brigade

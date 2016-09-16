@@ -1,0 +1,7 @@
+{
+   "type": "script",
+   "script_name": "test.lua",
+   "script_type": "lua",
+   "script_body": "print(\"hello, this is a test executed from Lua!\")",
+   "repeat_mode": "none"
+}

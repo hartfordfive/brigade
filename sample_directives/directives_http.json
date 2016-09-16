@@ -1,0 +1,67 @@
+{
+   "type": "http",
+   "url_list":[
+      {
+         "method":"GET",
+         "url":"http://brigade:8081/",
+         "cookies":[
+
+         ],
+         "weight": 50,
+         "min_delay":500,
+         "max_delay":3000
+      },
+      {
+         "method":"GET",
+         "url":"http://brigade:8081/default/known_headers",
+         "cookies":[
+
+         ],
+         "weight": 10,
+         "min_delay":500,
+         "max_delay":2500
+      },
+      {
+         "method":"GET",
+         "url":"http://brigade:8081/default/past_devices",
+         "cookies":[
+
+         ],
+         "weight": 30,
+         "min_delay":1000,
+         "max_delay":2000
+      },
+      {
+         "method":"GET",
+         "url":"http://brigade:8081/stats/show",
+         "cookies":[
+
+         ],
+         "weight": 5,
+         "min_delay":500,
+         "max_delay":1000
+      },
+      {
+         "method":"GET",
+         "url":"http://brigade:8081/default/trends",
+         "cookies":[
+
+         ],
+         "weight": 5,
+         "min_delay":2000,
+         "max_delay":5000
+      },
+      {
+         "method":"POST",
+         "url":"http://brigade:8081/user/login",
+         "cookies":[
+
+         ],
+         "data": "",
+         "headers": [],
+         "weight": 30,
+         "min_delay":1000,
+         "max_delay":2000
+      }
+   ]
+}

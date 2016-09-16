@@ -1,0 +1,26 @@
+{
+   "type": "http",
+   "on_startup": {
+      "method":"POST",
+      "url":"http://localhost:8089/",
+      "cookies":[
+      ],
+      "weight": 100,
+      "post_data": [
+      ]
+   },
+   "url_list":[
+      {
+         "method":"GET",
+         "url":"http://localhost:8089/",
+         "cookies":[
+         ],
+         "weight": 100,
+         "post_data": [
+         ]
+      }
+   ],
+   "proxy": "http://johndoe:mypass@vienna.wonderproxy.com:8080",
+   "min_delay":1000,
+   "max_delay":5000
+}

@@ -1,0 +1,15 @@
+{
+   "type": "ssh",
+   "actions":[
+      {
+         "host":"brigade.local",
+         "port": 22,
+         "username": "root",
+         "password": "",
+         "use_rnd_pass": true,
+         "command": "date",
+         "repeat": false,
+         "weight": 100
+      }
+   ]
+}

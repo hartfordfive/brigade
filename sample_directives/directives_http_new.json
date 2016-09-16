@@ -1,0 +1,44 @@
+{
+   "type": "http",
+   "on_startup": {
+      "method":"POST",
+      "url":"http://www.example.com/login",
+      "cookies":[
+      ],
+      "weight": 100,
+      "post_data": [
+      ]
+   },
+   "url_list":[
+      {
+         "method":"GET",
+         "url":"http://www.example.com/",
+         "cookies":[
+         ],
+         "weight": 50,
+         "post_data": [
+         ]
+      },
+      {
+         "method":"GET",
+         "url":"http://www.example.com/test",
+         "cookies":[
+         ],
+         "weight": 25,
+         "post_data": [
+         ]
+      },
+      {
+         "method":"GET",
+         "url":"http://www.example.com/bad-url",
+         "cookies":[
+         ],
+         "weight": 25,
+         "post_data": [
+         ]
+      }
+   ],
+   "proxy": "http://johndoe:mypass@vienna.wonderproxy.com:8080",
+   "min_delay":1000,
+   "max_delay":5000
+}
