@@ -154,8 +154,10 @@ func (cn *CommanderNode) ProcessRps(m []byte) {
 
 	// Initialize that map index if not already sets
 	if _, ok := node_list[id]; !ok {
-		node_list[id] = map[string]interface{}{}
-		node_list[id]["last_checkin"] = time.Now().UnixNano()
+		node_list[id] = map[string]interface{}{
+			"last_checkin": time.Now().UnixNano(),
+		}
+		//node_list[id]["last_checkin"] = time.Now().UnixNano()
 	}
 
 	// Set the status as OK if checked in within the last minute

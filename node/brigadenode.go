@@ -18,6 +18,9 @@ import (
 	"github.com/go-ini/ini"
 	"github.com/nats-io/nats"
 	"github.com/paulbellamy/ratecounter"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/load"
+	"github.com/shirou/gopsutil/mem"
 	"github.com/yuin/gopher-lua"
 	//"github.com/Shopify/go-lua"
 	//"github.com/conformal/gotk3/gtk" // for http_browser tests
@@ -517,9 +520,27 @@ func (bn *BrigadeNode) calculateAndSendRPS() {
 	}
 	for _ = range time.Tick(bn.CommanderStatsUpdate) {
 		// Now send the value on stats/rps queue subject
+		// Also, set an interval at which you'll get CPU/Mem stats of this node and report back to the commander
+		l, _ := load.Avg()
+		cpuPercent, _ := cpu.Percent((time.Duration(1) * time.Second), false)
+		vmem, _ := mem.VirtualMemory()
+
 		payload, _ := json.Marshal(map[string]interface{}{
-			"hostname":   hostname,
-			"id":         bn.NodeID,
+			"hostname": hostname,
+			"id":       bn.NodeID,
+			"system": map[string]interface{}{
+				"load": map[string]interface{}{
+					"1min":  l.Load1,
+					"5min":  l.Load5,
+					"15min": l.Load15,
+				},
+				"cpu_usage": RoundUp(cpuPercent[0], 1),
+				"memory": map[string]interface{}{
+					"total":        vmem.Total,
+					"free":         vmem.Free,
+					"used_percent": RoundUp(vmem.UsedPercent, 1),
+				},
+			},
 			"rps":        bn.RateCounter.Rate(),
 			"rps_failed": bn.RateCounterFailed.Rate(),
 		})

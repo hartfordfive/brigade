@@ -38,7 +38,9 @@ var task_in_progress bool
 
 //var ns *NodeStats
 var nc *nats.Conn
-var node_list map[string]map[string]interface{}
+
+//var node_list map[string]map[string]interface{}
+var node_list map[string]interface{}
 var directives_list map[string]interface{}
 
 func usage() {
@@ -137,7 +139,8 @@ func main() {
 		ClusterFailedRPS:     ratecounter.NewRateCounter(1 * time.Second),
 	}
 
-	node_list = map[string]map[string]interface{}{}
+	//node_list = map[string]map[string]interface{}{}
+	node_list = map[string]interface{}{}
 
 	task_in_progress = false
 
@@ -226,6 +229,7 @@ func ProcessRps(m []byte) {
 
 	node_list[id]["last_checkin"] = time.Now().UnixNano() / int64(time.Millisecond)
 	node_list[id]["hostname"] = hostname
+	node_list[id]["system"] = map[string]interface{}{}
 }
 
 /*
