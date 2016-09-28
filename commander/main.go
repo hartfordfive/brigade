@@ -20,6 +20,7 @@ import (
 
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/go-ini/ini"
+	"github.com/mitchellh/mapstructure"
 	"github.com/nats-io/nats"
 	"github.com/paulbellamy/ratecounter"
 )
@@ -40,7 +41,9 @@ var task_in_progress bool
 var nc *nats.Conn
 
 //var node_list map[string]map[string]interface{}
-var node_list map[string]interface{}
+//var node_list map[string]interface{}
+var nodeList map[string]NodeStats
+
 var directives_list map[string]interface{}
 
 func usage() {
@@ -139,8 +142,8 @@ func main() {
 		ClusterFailedRPS:     ratecounter.NewRateCounter(1 * time.Second),
 	}
 
-	//node_list = map[string]map[string]interface{}{}
-	node_list = map[string]interface{}{}
+	//nodeList = map[string]map[string]interface{}{}
+	//nodeList = make(map[string]NodeStats)
 
 	task_in_progress = false
 
@@ -192,44 +195,81 @@ func ProcessRps(m []byte) {
 		return
 	}
 
+	var nodeStats NodeStats
+	var md mapstructure.Metadata
+
+	config := &mapstructure.DecoderConfig{
+		WeaklyTypedInput: true,
+		Metadata:         &md,
+		Result:           &nodeStats,
+	}
+
+	decoder, err := mapstructure.NewDecoder(config)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := decoder.Decode(d); err != nil {
+		fmt.Println("ERROR: ", err)
+		fmt.Println(err.Error())
+	}
+
 	if DEBUG {
-		fmt.Printf("[DEBUG] RPS Stats Payload: %v\n", &d)
+		fmt.Printf("[DEBUG] RPS Stats Payload: %v\n", &nodeStats)
 	}
 
-	// Add up RPS from each server and worker
-	val, ok := d["rps"].(float64)
-	if !ok && DEBUG {
-		fmt.Println("[ERROR] Unknow rps value")
-	}
-	cs.ClusterRPS.Incr(int64(val))
+	cs.ClusterRPS.Incr(int64(nodeStats.Rps))
 
-	val, ok = d["rps_failed"].(float64)
-	if !ok && DEBUG {
-		fmt.Println("[ERROR] Unknow rps value")
-	}
-	cs.ClusterRPS.Incr(int64(val))
+	cs.ClusterFailedRPS.Incr(int64(nodeStats.RpsFailed))
 
-	hostname, ok := d["hostname"].(string)
-	id, ok := d["id"].(string)
+	id := nodeStats.Id
+
+	nodeList = map[string]NodeStats{}
 
 	// Initialize that map index if not already sets
-	if _, ok := node_list[id]; !ok {
-		node_list[id] = map[string]interface{}{}
-		node_list[id]["last_checkin"] = time.Now().UnixNano()
+	if _, ok := nodeList[id]; !ok {
+		//nodeList[id] = map[string]interface{}{}
+		//nodeList[id]["last_checkin"] = time.Now().UnixNano()
+
+		//ns := &NodeStats{}
+		nodeList[id] = nodeStats
+		/*
+			ns := NodeStats{
+				LastCheckIn: time.Now().UnixNano() / int64(time.Millisecond),
+			}
+		*/
+
+		//nodeList[id] = ns
+
 	}
 
 	// Set the status as OK if checked in within the last 3 minutes
-	last_checkin := node_list[id]["last_checkin"].(int64)
-	curr_time := time.Now().UnixNano() / int64(time.Millisecond)
-	if curr_time-last_checkin > 180000 {
-		node_list[id]["status"] = 0
-	} else {
-		node_list[id]["status"] = 1
-	}
+	/*
+		last_checkin := nodeList[id]["last_checkin"].(int64)
+		curr_time := time.Now().UnixNano() / int64(time.Millisecond)
+		if curr_time-last_checkin > 180000 {
+			nodeList[id]["status"] = 0
+		} else {
+			nodeList[id]["status"] = 1
+		}
 
-	node_list[id]["last_checkin"] = time.Now().UnixNano() / int64(time.Millisecond)
-	node_list[id]["hostname"] = hostname
-	node_list[id]["system"] = map[string]interface{}{}
+		nodeList[id]["last_checkin"] = time.Now().UnixNano() / int64(time.Millisecond)
+		nodeList[id]["hostname"] = nodeStats.Hostname
+		nodeList[id]["system"] = nodeStats
+	*/
+
+	/*
+		curr_time := time.Now().UnixNano() / int64(time.Millisecond)
+		if curr_time-nodeList[id].LastCheckIn > 180000 {
+			nodeList[id].Status = 0
+		} else {
+			nodeList[id].Status = 1
+		}
+		//node_list[id].LastCheckIn = time.Now().UnixNano() / int64(time.Millisecond)
+		nodeList[id].Hostname = nodeStats.Hostname
+		nodeList[id].NodeSystemStats = nodeStats.NodeSystemStats
+	*/
+
 }
 
 /*
@@ -303,7 +343,7 @@ func httpHandler(nc *nats.Conn) http.Handler {
 
 	mux.HandleFunc("/api/current_nodes", func(w http.ResponseWriter, r *http.Request) {
 
-		data, err := json.Marshal(node_list)
+		data, err := json.Marshal(nodeList)
 
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Cache-control", "public, max-age=0")

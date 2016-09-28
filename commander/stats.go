@@ -36,6 +36,19 @@ type Worker struct {
 	TotalWorkers int64 `json:"total_workers"`
 }
 
+// NodeStats is
 type NodeStats struct {
-	Node map[string]Worker `json:"node_list"`
+	Hostname       string
+	Id             string
+	Rps            int64
+	RpsFailed      int64
+	MemTotal       int64
+	MemFree        int64
+	MemUsedPercent float64
+	Load1Min       float64
+	Load5Min       float64
+	Load15Min      float64
+	CpuPercent     float64
+	LastCheckIn    int64
+	Status         int64
 }

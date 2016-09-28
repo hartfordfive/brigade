@@ -528,21 +528,30 @@ func (bn *BrigadeNode) calculateAndSendRPS() {
 		payload, _ := json.Marshal(map[string]interface{}{
 			"hostname": hostname,
 			"id":       bn.NodeID,
-			"system": map[string]interface{}{
-				"load": map[string]interface{}{
-					"1min":  l.Load1,
-					"5min":  l.Load5,
-					"15min": l.Load15,
+			/*
+				"system": map[string]interface{}{
+					"load": map[string]interface{}{
+						"onemin":     l.Load1,
+						"fivemin":    l.Load5,
+						"fifteenmin": l.Load15,
+					},
+					"cpu": RoundUp(cpuPercent[0], 1),
+					"memory": map[string]interface{}{
+						"total":       vmem.Total,
+						"free":        vmem.Free,
+						"usedpercent": RoundUp(vmem.UsedPercent, 1),
+					},
 				},
-				"cpu_usage": RoundUp(cpuPercent[0], 1),
-				"memory": map[string]interface{}{
-					"total":        vmem.Total,
-					"free":         vmem.Free,
-					"used_percent": RoundUp(vmem.UsedPercent, 1),
-				},
-			},
-			"rps":        bn.RateCounter.Rate(),
-			"rps_failed": bn.RateCounterFailed.Rate(),
+			*/
+			"cpupercent":     RoundUp(cpuPercent[0], 1),
+			"load1min":       l.Load1,
+			"load5min":       l.Load5,
+			"load15min":      l.Load15,
+			"memtotal":       vmem.Total,
+			"memfree":        vmem.Free,
+			"memusedpercent": RoundUp(vmem.UsedPercent, 1),
+			"rps":            bn.RateCounter.Rate(),
+			"rpsfailed":      bn.RateCounterFailed.Rate(),
 		})
 		fmt.Printf("[DEBUG] Sending RPS: %s\n", payload)
 		bn.NatsConn.Publish("progress", payload)

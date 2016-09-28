@@ -22,6 +22,7 @@ import (
 	"github.com/go-ini/ini"
 	"github.com/nats-io/nats"
 	//"github.com/paulbellamy/ratecounter"
+	//"github.com/mitchellh/mapstructure"
 )
 
 type CommanderNode struct {
@@ -34,8 +35,59 @@ type CommanderNode struct {
 	ClusterHttpDirectiveStats
 	DirectivesInProgress bool
 	DirectivesList       map[string]interface{}
-	NodeList             map[string]map[string]interface{}
+	NodeList             map[string]interface{}
+	//NodeList             map[string]map[string]interface{}
 }
+
+/*
+	payload, _ := json.Marshal(map[string]interface{}{
+		"hostname": hostname,
+		"id":       bn.NodeID,
+		"system": map[string]interface{}{
+			"load": map[string]interface{}{
+				"1min":  l.Load1,
+				"5min":  l.Load5,
+				"15min": l.Load15,
+			},
+			"cpu_usage": RoundUp(cpuPercent[0], 1),
+			"memory": map[string]interface{}{
+				"total":        vmem.Total,
+				"free":         vmem.Free,
+				"used_percent": RoundUp(vmem.UsedPercent, 1),
+			},
+		},
+		"rps":        bn.RateCounter.Rate(),
+		"rps_failed": bn.RateCounterFailed.Rate(),
+	})
+*/
+
+/*
+type NodeSystemMemoryStat struct {
+	Total       int64   `mapstructure:"total"`
+	Free        int64   `mapstructure:"free"`
+	UsedPercent float64 `mapstructure:"used_percent"`
+}
+
+type NodeSystemLoadStat struct {
+	Load1Min  float64 `mapstructure:"1min"`
+	Load5Min  float64 `mapstructure:"5min"`
+	Load15Min float64 `mapstructure:"15min"`
+}
+
+type NodeSystemStats struct {
+	NodeSystemLoadStat   `mapstructure:"load,squash"`
+	CPUUsage             float64 `mapstructure:"cpu_usage"`
+	NodeSystemMemoryStat `mapstructure:"memory,squash"`
+}
+
+type NodeStats struct {
+	Hostname        string `mapstructure:"hostname"`
+	Id              string `mapstructure:"id"`
+	NodeSystemStats `mapstructure:"system,squash"`
+	Rps             int64 `mapstructure:"rps"`
+	RpsFailed       int64 `mapstructure:"rps_failed"`
+}
+*/
 
 const (
 //DEBUG      = true
@@ -45,7 +97,7 @@ const (
 func NewCommanderNode() *CommanderNode {
 
 	cn := &CommanderNode{
-		NodeList: map[string]map[string]interface{}{},
+		NodeList: map[string]interface{}{},
 	}
 	return cn
 }
@@ -153,7 +205,15 @@ func (cn *CommanderNode) ProcessRps(m []byte) {
 	id, ok := d["id"].(string)
 
 	// Initialize that map index if not already sets
-	if _, ok := node_list[id]; !ok {
+	/*
+		if _, ok := node_list[id]; !ok {
+			node_list[id] = map[string]interface{}{
+				"last_checkin": time.Now().UnixNano(),
+			}
+			//node_list[id]["last_checkin"] = time.Now().UnixNano()
+		}
+	*/
+	if _, ok := cn.NodeList[id]; !ok {
 		node_list[id] = map[string]interface{}{
 			"last_checkin": time.Now().UnixNano(),
 		}
