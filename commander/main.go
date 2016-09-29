@@ -42,7 +42,7 @@ var nc *nats.Conn
 
 //var node_list map[string]map[string]interface{}
 //var node_list map[string]interface{}
-var nodeList map[string]NodeStats
+var nodeList map[string]*NodeStats
 
 var directives_list map[string]interface{}
 
@@ -214,62 +214,32 @@ func ProcessRps(m []byte) {
 		fmt.Println(err.Error())
 	}
 
-	if DEBUG {
-		fmt.Printf("[DEBUG] RPS Stats Payload: %v\n", &nodeStats)
-	}
-
 	cs.ClusterRPS.Incr(int64(nodeStats.Rps))
 
 	cs.ClusterFailedRPS.Incr(int64(nodeStats.RpsFailed))
 
 	id := nodeStats.Id
 
-	nodeList = map[string]NodeStats{}
+	nodeList = map[string]*NodeStats{}
 
 	// Initialize that map index if not already sets
 	if _, ok := nodeList[id]; !ok {
-		//nodeList[id] = map[string]interface{}{}
-		//nodeList[id]["last_checkin"] = time.Now().UnixNano()
-
-		//ns := &NodeStats{}
-		nodeList[id] = nodeStats
-		/*
-			ns := NodeStats{
-				LastCheckIn: time.Now().UnixNano() / int64(time.Millisecond),
-			}
-		*/
-
-		//nodeList[id] = ns
-
+		nodeList[id] = &nodeStats
 	}
 
-	// Set the status as OK if checked in within the last 3 minutes
-	/*
-		last_checkin := nodeList[id]["last_checkin"].(int64)
-		curr_time := time.Now().UnixNano() / int64(time.Millisecond)
-		if curr_time-last_checkin > 180000 {
-			nodeList[id]["status"] = 0
-		} else {
-			nodeList[id]["status"] = 1
-		}
+	currTime := time.Now().UnixNano() / int64(time.Millisecond)
+	if currTime-nodeList[id].LastCheckIn > 180000 {
+		nodeList[id].Status = 0
+	} else {
+		nodeList[id].Status = 1
+	}
+	nodeList[id].LastCheckIn = currTime
 
-		nodeList[id]["last_checkin"] = time.Now().UnixNano() / int64(time.Millisecond)
-		nodeList[id]["hostname"] = nodeStats.Hostname
-		nodeList[id]["system"] = nodeStats
-	*/
-
-	/*
-		curr_time := time.Now().UnixNano() / int64(time.Millisecond)
-		if curr_time-nodeList[id].LastCheckIn > 180000 {
-			nodeList[id].Status = 0
-		} else {
-			nodeList[id].Status = 1
-		}
-		//node_list[id].LastCheckIn = time.Now().UnixNano() / int64(time.Millisecond)
-		nodeList[id].Hostname = nodeStats.Hostname
-		nodeList[id].NodeSystemStats = nodeStats.NodeSystemStats
-	*/
-
+	if DEBUG {
+		fmt.Printf("[DEBUG] Last Checkin: %d\n", nodeList[id].LastCheckIn)
+		fmt.Printf("[DEBUG] Status: %d\n", nodeList[id].Status)
+		fmt.Printf("[DEBUG] RPS Stats Payload: %v\n-------------------\n", nodeList[id])
+	}
 }
 
 /*

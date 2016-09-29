@@ -50,5 +50,5 @@ type NodeStats struct {
 	Load15Min      float64
 	CpuPercent     float64
 	LastCheckIn    int64
-	Status         int64
+	Status         int
 }
